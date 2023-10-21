@@ -9,17 +9,29 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mantine/core": "^7.1.5",
+    "@mantine/form": "^7.1.5",
+    "@mantine/hooks": "^7.1.5",
+    "@mantine/modals": "^7.1.5",
+    "@mantine/notifications": "^7.1.5",
+    "@mantine/nprogress": "^7.1.5",
+    "@web3modal/wagmi": "^3.1.0",
+    "next": "13.5.6",
+    "next-auth": "^4.24.3",
     "react": "^18",
     "react-dom": "^18",
-    "next": "13.5.6"
+    "viem": "^1.16.6",
+    "wagmi": "^1.4.4"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10",
-    "postcss": "^8",
-    "tailwindcss": "^3"
+    "postcss": "^8.4.31",
+    "postcss-preset-mantine": "^1.9.0",
+    "postcss-simple-vars": "^7.0.1",
+    "tailwindcss": "^3",
+    "typescript": "^5"
   }
 }
