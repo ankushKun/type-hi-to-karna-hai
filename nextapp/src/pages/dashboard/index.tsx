@@ -1,10 +1,21 @@
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useAccount, useDisconnect, useConnect } from "wagmi"
+import { ethers } from "ethers";
 import Page from "@/components/page";
 import { useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react"
-import { ethers } from "ethers"
+import { contractAddress } from "@/utils/variables";
+import hack1 from "@/contracts/hack/artifacts/contracts/hack1.sol/hack1.json"
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// async function connectOrSomethingIdk() {
+//     const provider = new ethers.BrowserProvider((window as any).ethereum);
+//     await (window as any).ethereum.request({ method: "eth_requestAccounts" });
+//     const signer = await provider.getSigner();
+//     const addr = await signer.getAddress();
+// }
 
 
 export default function dashIndex() {
@@ -23,14 +34,37 @@ export default function dashIndex() {
     const [tags, setTags] = useState("")
     const [category, setCategory] = useState("")
 
+    async function createBounty(title: string, description: string, url: string, reward: number, tags: string, category: string) {
+        const provider = new ethers.BrowserProvider((window as any).ethereum);
+        await (window as any).ethereum.request({ method: "eth_requestAccounts" });
+        const signer = await provider.getSigner();
+        const addr = await signer.getAddress();
+        const contr = new ethers.Contract(contractAddress, hack1.abi, signer);
+        let tx;
+        if (reward == 0) {
+            tx = await contr.setDataMaintainerFree(title, description, url, tags, category);
+        } else {
+            tx = await contr.setDataMaintainerPiad(title, description, url, tags, category, { value: ethers.parseEther(reward.toString()) });
+        }
+        tx.wait();
+        toast.success("Bounty created")
+        setShowNewBountyPopup(false)
+    }
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && typeof (window as any).ethereum !== 'undefined') {
+            // connectOrSomethingIdk()
+        }
+    }, [])
+
     useEffect(() => {
         if (!showNewBountyPopup) return
         fetch("/api/gen-categ", {
             method: "POST",
             body: JSON.stringify({ description: description }),
             headers: { "Content-Type": "application/json" }
-        }).then((res) => res.json()).then((data) => {
-            setCategory(data)
+        }).then((res) => res.json()).then((categ) => {
+            setCategory(categ)
         })
     }, [description])
 
@@ -40,6 +74,7 @@ export default function dashIndex() {
     }, [isConnected])
 
     return <Page>
+        <ToastContainer />
         {showNewBountyPopup && <div className="absolute w-full h-full top-0 left-0 bg-white/10 overflow-y-scroll z-20 rounded-lg backdrop-blur-lg ring-1 ring-white/30 p-4">
             <button className="absolute top-2 right-5 font-bold text-2xl" onClick={() => setShowNewBountyPopup(false)}>x</button>
             <div className="font-bold text-xl mb-2">Add new bounty</div>
@@ -52,7 +87,7 @@ export default function dashIndex() {
                 <input className="bg-black/70 p-2 rounded-lg w-full" placeholder="tags" onChange={(e) => setTags(e.target.value)} />
             </div>
             <button onClick={() => {
-
+                createBounty(title, description, url, reward, tags, category)
             }}
                 className="p-2 ring-1 ring-white/50 text-xl px-4 rounded-lg m-2 hover:bg-black/50 transition-all duration-200">submit</button>
         </div>}
