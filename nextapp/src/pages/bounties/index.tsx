@@ -15,7 +15,10 @@ type bounty = {
     reward: number,
     tags: string,
     solved: boolean,
+    category: string,
 }
+
+const categories = ["question", "bug", "enhancement", "all"]
 
 const bounties: bounty[] = [
     {
@@ -27,6 +30,7 @@ const bounties: bounty[] = [
         reward: 1000000000000000000 / ETH, // wei
         tags: "tag1,tag2",
         solved: false,
+        category: "bug",
     },
     {
         id: 2,
@@ -37,6 +41,7 @@ const bounties: bounty[] = [
         reward: 1000000000000000000 / ETH, // wei
         tags: "tag1,tag2",
         solved: false,
+        category: "question",
     },
     {
         id: 3,
@@ -47,6 +52,7 @@ const bounties: bounty[] = [
         reward: 1000000000000000000 / ETH, // wei
         tags: "tag1,tag2",
         solved: false,
+        category: "enhancement",
     },
     {
         id: 4,
@@ -57,6 +63,7 @@ const bounties: bounty[] = [
         reward: 1000000000000000000 / ETH, // wei
         tags: "tag1,tag2",
         solved: false,
+        category: "bug",
     },
     {
         id: 5,
@@ -67,6 +74,7 @@ const bounties: bounty[] = [
         reward: 1000000000000000000 / ETH, // wei
         tags: "tag1,tag2",
         solved: false,
+        category: "bug",
     },
     {
         id: 6,
@@ -77,6 +85,7 @@ const bounties: bounty[] = [
         reward: 1000000000000000000 / ETH, // wei
         tags: "tag1,tag2",
         solved: false,
+        category: "question",
     },
     {
         id: 7,
@@ -87,14 +96,29 @@ const bounties: bounty[] = [
         reward: 1000000000000000000 / ETH, // wei
         tags: "tag1,tag2",
         solved: false,
+        category: "question",
     },
 ]
 
 export default function dashIndex() {
     const [activeBounty, setActiveBounty] = useState<bounty | null>()
+    const [selectedCategory, setSelectedCategory] = useState<string | null>("all")
+    const [allBounties, setAllBounties] = useState<bounty[]>(bounties)
+    const [fliterdBounties, setFilteredBounties] = useState<bounty[]>([])
+
+    useEffect(() => {
+        if (!selectedCategory) {
+            setFilteredBounties(allBounties)
+            return
+        }
+        setFilteredBounties(allBounties.filter((bounty) => {
+            if (selectedCategory == "all") return true
+            return bounty.category == selectedCategory
+        }))
+    }, [selectedCategory])
 
     const Bounty = (data: bounty) => {
-        return <div className={`min-w-[350px] cursor-pointer bg-black/80 ring-1 p-2 m-1 grow rounded-lg ring-[#FFD600]/50 ${activeBounty?.id == data.id ? "ring-2 bg-[#FFD600]/40" : ""}`}
+        return <div className={`max-w-[350px] min-w-[350px] cursor-pointer bg-black/80 ring-1 p-2 m-1 grow rounded-lg ring-[#FFD600]/50 ${activeBounty?.id == data.id ? "ring-2 bg-[#FFD600]/40" : ""}`}
             onClick={() => setActiveBounty(data)}>
             <div className="flex justify-between items-center">
                 <div className="font-bold text-2xl truncate">{data.title}</div>
@@ -110,10 +134,18 @@ export default function dashIndex() {
 
 
     return <Page>
-        <div className="overflow-scroll flex flex-row mb-5">
-            {bounties.map((bounty) => {
+        <div className="overflow-scroll flex flex-row">
+            {fliterdBounties.map((bounty) => {
                 return Bounty(bounty)
             })}
+        </div>
+        <div className="my-1 mb-2">
+            {
+                categories.map((category) => {
+                    return <button className={`p-2 px-5 rounded-lg m-1 hover:text-amber-700 transition-all duration-200 ${selectedCategory == category ? "text-yellow-600" : "text-white"}`}
+                        onClick={() => setSelectedCategory(category)}>{category}</button>
+                })
+            }
         </div>
         <div className="w-full ring-1 ring-[#FFD600]/50 rounded-lg bg-black/80 h-[60vh] text-left p-7 relative">
             {
@@ -130,7 +162,7 @@ export default function dashIndex() {
                     </div>
                     <div className="flex gap-5 justify-center items-center absolute bottom-5 w-full">
                         <Link href={activeBounty.url} target="_blank" className="bg-white text-black p-2 px-5 rounded-lg block w-fit hover:font-bold">View</Link>
-                        <button className="bg-white text-black p-2 px-5 rounded-lg block w-fit hover:font-bold">Sumbmit Solution</button>
+                        <button className="bg-white text-black p-2 px-5 rounded-lg block w-fit hover:font-bold">Submit Solution</button>
                     </div>
                 </div> : <div>Select a bounty from above</div>
             }
