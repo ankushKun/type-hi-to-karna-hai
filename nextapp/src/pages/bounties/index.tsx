@@ -160,6 +160,7 @@ export default function dashIndex() {
                     </div>
                     <div className="flex gap-5 justify-center items-center absolute bottom-5 w-full">
                         <Link href={activeBounty.url} target="_blank" className="bg-white text-black p-2 px-5 rounded-lg block w-fit hover:font-bold">View</Link>
+                        <Link href={"https://github.com/" + activeBounty.url.split("/")[3] + "/" + activeBounty.url.split("/")[4] + "/fork"} target="_blank" className="bg-white text-black p-2 px-5 rounded-lg block w-fit hover:font-bold">Create Fork</Link>
                         <button className="bg-white text-black p-2 px-5 rounded-lg block w-fit hover:font-bold" onClick={() => { setShowSubmitPopup(true) }}>Submit Solution</button>
                     </div>
                 </div> : <div>Select a bounty from above</div>

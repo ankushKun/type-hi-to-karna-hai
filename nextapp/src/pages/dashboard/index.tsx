@@ -83,7 +83,7 @@ export default function dashIndex() {
                 <textarea maxLength={150} minLength={50} className="bg-black/70 p-2 rounded-lg w-full" placeholder="description" onBlur={(e) => setDescription(e.target.value)} />
                 {category && <div className="bg-black/70 p-2 -mt-2 rounded-lg w-full">Predicted Category: <span className="font-bold text-left">{category}</span></div>}
                 <input className="bg-black/70 p-2 rounded-lg w-full" placeholder="url" onChange={(e) => setUrl(e.target.value)} />
-                <input type="number" className="bg-black/70 p-2 rounded-lg w-full" placeholder="reward (ETH)" onChange={(e) => setReward(parseFloat(e.target.value) * 1000000000000000000)} />
+                <input type="number" className="bg-black/70 p-2 rounded-lg w-full" placeholder="reward (ETH)" onChange={(e) => setReward(parseFloat(e.target.value))} />
                 <input className="bg-black/70 p-2 rounded-lg w-full" placeholder="tags" onChange={(e) => setTags(e.target.value)} />
             </div>
             <button onClick={() => {
