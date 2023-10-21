@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract hack1{
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
+contract hack1  is ERC1155{
 
     struct maintainer{
         address maintainerAddress;
@@ -19,6 +22,8 @@ contract hack1{
         uint bid;
         string description;
         string url;
+        bool nftAccess;
+        uint tokenID;
     }
     
 
@@ -38,7 +43,40 @@ contract hack1{
     uint public SID=0;
     uint public NUM=0;
 
+    address public owner;
+
     error throwError(string);
+
+     constructor() ERC1155("ipfs://QmPzyLCmiJaNHwdton5Zojsn4v8bRZape5RkNGd63dd1A2/")
+    {
+        owner = msg.sender;
+    }
+
+       function setURI(string memory newuri) public{
+        _setURI(newuri);
+    }
+
+     function uri(uint256 id) public view virtual override returns (string memory) {
+        
+        return
+            string(
+                abi.encodePacked(super.uri(id), Strings.toString(id), ".json")
+            );
+    }
+
+    function grantingAccessUser(uint _BID,uint _SID,address _solverAddress,string memory _IPFS,uint _tokenID) public{
+        require(maintainerAddrs[_BID]==msg.sender,"You are not the owner of this bounty");
+        require(solverAddrs[_SID]==_solverAddress,"This solverID is not of the given account");
+        require(sidDetails[_SID].bid==_BID,"This is not the solver of this bounty");
+        setURI(_IPFS);
+        sidDetails[_SID].nftAccess=true;
+        sidDetails[_SID].tokenID=_tokenID;
+    }
+
+    function claimNFT(uint _SID) public{
+         require(solverAddrs[_SID]==msg.sender,"You are not the solver of this solverID");
+         _mint(msg.sender, sidDetails[_SID].tokenID, 1, "");
+    }
 
     function setDataMaintainerFree(string memory _title,string memory _desc,string memory _url,string memory _tags,string memory _category) public {
         
@@ -78,6 +116,18 @@ contract hack1{
           BID=BID+1;
     }
 
+    // function stringToUint(string memory s) public pure returns (uint) {
+    //     bytes memory b = bytes(s);
+    //     uint result = 0;
+    //     for (uint256 i = 0; i < b.length; i++) {
+    //         uint256 c = uint256(uint8(b[i]));
+    //         if (c >= 48 && c <= 57) {
+    //             result = result * 10 + (c - 48);
+    //         }
+    //     }
+    //     return result;
+    // }
+
     function setDataSolver(uint _BID,string memory _desc,string memory _url) public {
           
           rankerAddress[NUM]=msg.sender;
@@ -97,6 +147,18 @@ contract hack1{
           NUM=NUM+1;
     }
 
+    // function maintainerSolvedUpdate(bool _solved,uint _BID) public {
+    //     bool check=false;
+    //      for(uint i=0;i<maintainerBID[msg.sender].length;i++){
+    //         if(maintainerBID[msg.sender][i]==_BID){
+    //               check=true;
+    //         }
+    //      }
+    //      if(check==false){
+    //         revert throwError("This bounty is not yours");
+    //      }
+    //      bidDetails[_BID].solved=_solved;
+    // } 
 
     function transferMoney(address payable solveAddress,uint _BID) public{
        
@@ -139,5 +201,6 @@ contract hack1{
     function getRewards(uint value) public view returns(uint){
         return bidDetails[value].reward;
     }
+
 
 }
