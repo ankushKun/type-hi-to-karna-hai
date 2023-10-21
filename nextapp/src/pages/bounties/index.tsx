@@ -24,29 +24,29 @@ const bounties: bounty[] = [
     {
         id: 1,
         maintainer: "0x000000",
-        title: "Bounty Titlasdasdsdadahjdajsdadakdakdadadjkadjajkadjadjajakde",
-        description: "Bounty Description",
+        title: "Patch python flask app",
+        description: "Fix API endpoints and add a V2 endpoint",
         url: "#",
         reward: 1000000000000000000 / ETH, // wei
-        tags: "tag1,tag2",
+        tags: "python,flask,api",
         solved: false,
-        category: "bug",
+        category: "enhancement",
     },
     {
         id: 2,
         maintainer: "0x000000",
-        title: "Bounty Title",
-        description: "Bounty Description",
+        title: "expressjs server setup guide",
+        description: "sample description",
         url: "#",
         reward: 1000000000000000000 / ETH, // wei
-        tags: "tag1,tag2",
+        tags: "jodejs,api",
         solved: false,
         category: "question",
     },
     {
         id: 3,
         maintainer: "0x000000",
-        title: "Bounty Title",
+        title: "Sample bounty",
         description: "Bounty Description",
         url: "#",
         reward: 1000000000000000000 / ETH, // wei
