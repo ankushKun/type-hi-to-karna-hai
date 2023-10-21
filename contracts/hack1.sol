@@ -21,24 +21,30 @@ contract hack1{
     }
     
 
-    mapping (address=>uint[]) public maintainerBID;
-    mapping (uint=>address) public maintainerAddrs;
-    mapping (uint=>maintainer) public bidDetails;
+    mapping (address=>uint[]) public maintainerBID;    // address to bounty id
+    mapping (uint=>address) public maintainerAddrs;    // bounty id to address
+    mapping (uint=>maintainer) public bidDetails;      // bounty id to maintainer
 
-    mapping (address=>uint[]) public solverSID;
-    mapping (uint=>address) public solverAddrs;
-    mapping (uint=>solver) public  sidDetails;
+    mapping (address=>uint[]) public solverSID;        // address to solver id
+    mapping (uint=>address) public solverAddrs;        // solver id to address
+    mapping (uint=>solver) public  sidDetails;         // solver id to solver
+
+    mapping (uint=>address) public rankerAddress;       // simple numerical number to solver address
+    mapping (address=>uint) public rankerContribution;  // solver address to contribution number
 
 
     uint public BID=0;
     uint public SID=0;
+    uint public NUM=0;
 
     error throwError(string);
 
     function setDataMaintainerFree(string memory _title,string memory _desc,string memory _url,string memory _tags) public {
-          BID=BID+1;
+        
           maintainerBID[msg.sender].push(BID);
+
           maintainerAddrs[BID]=msg.sender;
+
           bidDetails[BID].maintainerAddress=msg.sender;
           bidDetails[BID].title=_title;
           bidDetails[BID].description=_desc;
@@ -46,18 +52,27 @@ contract hack1{
           bidDetails[BID].reward=0;
           bidDetails[BID].tags=_tags;
           bidDetails[BID].solved=false;
+
+          BID=BID+1;
     }
 
     function setDataMaintainerPiad(string memory _title,string memory _desc,string memory _url,string memory _tags) public payable {
-          BID=BID+1;       
+        
+          require(msg.value>=0.00031 ether,"Reward is less than 0.5 dollar"); 
+
           maintainerBID[msg.sender].push(BID);
+
           maintainerAddrs[BID]=msg.sender;
+
+          bidDetails[BID].maintainerAddress=msg.sender;
           bidDetails[BID].title=_title;
           bidDetails[BID].description=_desc;
           bidDetails[BID].url=_url;
           bidDetails[BID].reward=msg.value;
           bidDetails[BID].tags=_tags;
           bidDetails[BID].solved=false;
+
+          BID=BID+1;
     }
 
     // function stringToUint(string memory s) public pure returns (uint) {
@@ -73,13 +88,22 @@ contract hack1{
     // }
 
     function setDataSolver(uint _BID,string memory _desc,string memory _url) public {
-          SID=SID+1;
+          
+          rankerAddress[NUM]=msg.sender;
+
+          rankerContribution[rankerAddress[NUM]]==0 ? rankerContribution[rankerAddress[NUM]]=1 : rankerContribution[rankerAddress[NUM]]++;
+
           solverSID[msg.sender].push(SID);
+
           solverAddrs[SID]=msg.sender;
+
           sidDetails[SID].solverAddress=msg.sender;
           sidDetails[SID].bid=_BID;
           sidDetails[SID].description=_desc;
           sidDetails[SID].url=_url;
+
+          SID=SID+1;
+          NUM=NUM+1;
     }
 
     // function maintainerSolvedUpdate(bool _solved,uint _BID) public {
@@ -96,15 +120,23 @@ contract hack1{
     // } 
 
     function transferMoney(address payable solveAddress,uint _BID) public{
-        // _address.transfer(this.balance);  
-        // return bidDetails[_BID].reward;
-         require(maintainerAddrs[_BID]!=msg.sender,"This bounty is not yours");
+       
+         require(maintainerAddrs[_BID]==msg.sender,"This bounty is not yours");
+
          bidDetails[_BID].solved=true;
+
          solveAddress.transfer(bidDetails[_BID].reward);
     }
 
+    function tipping(address payable tipAddress) public payable {
+        
+         tipAddress.transfer(msg.value);
+    }
+
     function maintainerUpdate(uint _BID,string memory _title,string memory _desc,string memory _url,string memory _tags) public {
-          require(maintainerAddrs[_BID]!=msg.sender,"This bounty is not yours");
+
+          require(maintainerAddrs[_BID]==msg.sender,"This bounty is not yours");
+
           bidDetails[BID].title=_title;
           bidDetails[BID].description=_desc;
           bidDetails[BID].url=_url;
@@ -112,11 +144,21 @@ contract hack1{
     }
 
      function solverUpdate(uint _SID,uint _BID,string memory _desc,string memory _url) public {
-          require(solverAddrs[_SID]!=msg.sender,"This bounty is not yours");
+
+          require(solverAddrs[_SID]==msg.sender,"This bounty is not yours");
           require(sidDetails[SID].bid==_BID,"This is not the solution of this bounty");
+
           sidDetails[SID].bid=_BID;
           sidDetails[SID].description=_desc;
           sidDetails[SID].url=_url;
+    }
+
+    function gettingRanks(uint value) public view returns(uint){
+          return rankerContribution[rankerAddress[value]];
+    }
+
+    function getRewards(uint value) public view returns(uint){
+        return bidDetails[value].reward;
     }
 
 }
