@@ -35,6 +35,7 @@ export default function dashIndex() {
     const [showSubmitPopup, setShowSubmitPopup] = useState(false)
     const [description, setDescription] = useState("")
     const [url, setUrl] = useState("")
+    const [ranks, setRanks] = useState<any[]>([])
 
     async function submitSol(bid: number, desc: string, url: string) {
         const provider = new ethers.BrowserProvider((window as any).ethereum);
@@ -48,6 +49,13 @@ export default function dashIndex() {
         setShowSubmitPopup(false)
     }
 
+    const getGettingRanks = async (value: number) => {
+        const provider = new ethers.BrowserProvider((window as any).ethereum);
+        const contract = new ethers.Contract(contractAddress, hack1.abi, provider);
+        const transaction = await contract.gettingRanks(value);
+        transaction.wait();
+    }
+
     const setTipping = async (addrs: string) => {
         const provider = new ethers.BrowserProvider((window as any).ethereum);
         await (window as any).ethereum.request({ method: "eth_requestAccounts" });
@@ -55,7 +63,7 @@ export default function dashIndex() {
         const contract = new ethers.Contract(contractAddress, hack1.abi, signer);
         const transaction = await contract.tipping(addrs, { value: ethers.parseEther("0.0001") });
         transaction.wait();
-        toast.success("Tipped")
+        toast.success("Tip sent")
     }
 
     async function readSolutions() {
