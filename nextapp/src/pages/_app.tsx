@@ -4,7 +4,7 @@ import type { AppProps } from 'next/app'
 import { MantineProvider } from '@mantine/core';
 import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi/react'
 import { WagmiConfig } from 'wagmi'
-import { polygonMumbai } from 'wagmi/chains'
+import { polygonMumbai, polygonZkEvmTestnet } from 'wagmi/chains'
 import { SessionProvider } from "next-auth/react"
 
 
@@ -15,7 +15,7 @@ const metadata = {
   description: 'Opensource issue bounty platform',
 }
 
-const chains = [polygonMumbai]
+const chains = [polygonZkEvmTestnet]
 const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata })
 createWeb3Modal({
   wagmiConfig, projectId, chains, themeVariables: {
