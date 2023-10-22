@@ -30,6 +30,7 @@ export default function dashIndex() {
     const [activeBounty, setActiveBounty] = useState<bounty>()
     const [selectedCategory, setSelectedCategory] = useState<string | null>("all")
     const [allBounties, setAllBounties] = useState<bounty[]>([])
+    const [solutions, setSolutions] = useState<any[]>([])
     const [fliterdBounties, setFilteredBounties] = useState<bounty[]>([])
     const [showSubmitPopup, setShowSubmitPopup] = useState(false)
     const [description, setDescription] = useState("")
@@ -45,6 +46,41 @@ export default function dashIndex() {
         tx.wait()
         toast.success("Solution submitted")
         setShowSubmitPopup(false)
+    }
+
+    const setTipping = async (addrs: string) => {
+        const provider = new ethers.BrowserProvider((window as any).ethereum);
+        await (window as any).ethereum.request({ method: "eth_requestAccounts" });
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(contractAddress, hack1.abi, signer);
+        const transaction = await contract.tipping(addrs, { value: ethers.parseEther("0.0001") });
+        transaction.wait();
+        toast.success("Tipped")
+    }
+
+    async function readSolutions() {
+        const provider = new ethers.BrowserProvider((window as any).ethereum);
+        // await (window as any).ethereum.request({ method: "eth_requestAccounts" });
+        // const signer = await provider.getSigner();
+        // const addr = await signer.getAddress();
+        const contr = new ethers.Contract(contractAddress, hack1.abi, provider);
+        const len = await contr.SID() as number
+        const sols = []
+        for (let i = 0; i < len; i++) {
+            const sol = await contr.sidDetails(i)
+            const tmpb = { ...sol }
+            console.log(tmpb)
+            sols.push({
+                id: i,
+                maintainer: tmpb[0],
+                bid: tmpb[1],
+                description: tmpb[2],
+                url: tmpb[3],
+                solved: tmpb[4],
+            })
+        }
+        console.log(sols)
+        setSolutions(sols)
     }
 
     useEffect(() => {
@@ -76,6 +112,8 @@ export default function dashIndex() {
             console.log(bounties)
         }
         readBounties()
+        readSolutions()
+
     }, [])
 
     useEffect(() => {
@@ -147,8 +185,11 @@ export default function dashIndex() {
         </div>
         <div className="w-full ring-1 ring-[#FFD600]/50 rounded-lg bg-black/80 h-[60vh] text-left p-7 relative">
             {
-                activeBounty ? <div className="">
-                    <div className="font-bold text-2xl truncate mb-5">{activeBounty.title}</div>
+                activeBounty ? <div className="relative">
+                    <button className="absolute top-3 right-3" onClick={() => {
+                        setTipping(activeBounty.maintainer)
+                    }}>tip ⭐️</button>
+                    <div className="font-bold text-2xl truncate mb-5">{activeBounty.title} <span className="text-green-600">{activeBounty.solved && "[SOLVED]"}</span></div>
                     <div className="flex w-fit bg-indigo-500/90 px-5 p-1 rounded-lg font-bold">{activeBounty.reward} <Image alt="eth" src={ethLogo} height={20} width={20} /></div>
                     <div className="flex gap-2 justify-end">
                         {activeBounty.tags.split(",").map((tag) => {
@@ -158,11 +199,38 @@ export default function dashIndex() {
                     <div className="text-white">
                         {activeBounty.description}
                     </div>
-                    <div className="flex gap-5 justify-center items-center absolute bottom-5 w-full">
+                    <div className="flex gap-5 justify-center items-center w-full">
                         <Link href={activeBounty.url} target="_blank" className="bg-white text-black p-2 px-5 rounded-lg block w-fit hover:font-bold">View</Link>
                         <Link href={"https://github.com/" + activeBounty.url.split("/")[3] + "/" + activeBounty.url.split("/")[4] + "/fork"} target="_blank" className="bg-white text-black p-2 px-5 rounded-lg block w-fit hover:font-bold">Create Fork</Link>
                         <button className="bg-white text-black p-2 px-5 rounded-lg block w-fit hover:font-bold" onClick={() => { setShowSubmitPopup(true) }}>Submit Solution</button>
                     </div>
+                    {/* solutions */}
+                    <div className="font-bold text-2xl my-5">Solutions</div>
+                    {
+                        solutions.map((sol) => {
+                            if (sol.bid != activeBounty.id) return
+                            return <div className="flex justify-between items-center mb-2">
+                                <div className="font-semibold text-2xl truncate">{sol.description}</div>
+                                <div className="flex min-w-fit">{sol.url}</div>
+                                <button className="flex" onClick={() => {
+                                    setTipping(sol.maintainer)
+                                }}>send 0.0001 <Image alt="eth" src={ethLogo} height={20} width={20} /> tip </button>
+                                <button onClick={() => {
+                                    const setTransferMoney = async (addrs: string, _bid: number) => {
+                                        const provider = new ethers.BrowserProvider((window as any).ethereum);
+                                        await (window as any).ethereum.request({ method: "eth_requestAccounts" });
+                                        const signer = await provider.getSigner();
+                                        const contract = new ethers.Contract(contractAddress, hack1.abi, signer);
+                                        const transaction = await contract.transferMoney(addrs, _bid);
+                                        transaction.wait();
+                                        toast.success("Marked Accepted, Rewards Sent")
+                                        readSolutions()
+                                    }
+                                    setTransferMoney(sol.maintainer, sol.bid)
+                                }}>accept solution</button>
+                            </div>
+                        })
+                    }
                 </div> : <div>Select a bounty from above</div>
             }
         </div>
